@@ -1,70 +1,150 @@
-# Getting Started with Create React App
+# File-Encryption-Tool - Symmetric Key Encryption
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project provides a simple tool to encrypt and decrypt files using symmetric key encryption (AES-256). It allows users to upload files for encryption and then download the encrypted file. Users can also decrypt the file using the same encryption key (symmetric encryption) along with the initialization vector (IV).
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- Upload any file and encrypt it using AES-256 encryption.
+- Download the encrypted file.
+- Decrypt the encrypted file using the same key and initialization vector (IV).
+- Encryption is done using a randomly generated symmetric key and IV for each session.
 
-### `npm start`
+## Technologies Used
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Frontend**: React.js
+- **Backend**: Node.js, Express.js
+- **Encryption**: AES-256-CTR (Counter Mode)
+- **File Storage**: Files are stored and served from the `uploads/` directory
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Installation
 
-### `npm test`
+### Prerequisites
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **Node.js** installed (version 14.x or higher)
+- **npm** (comes with Node.js)
+- **React** (create-react-app or use this setup)
 
-### `npm run build`
+### Steps to Install and Run the Project
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. **Clone the repository:**
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+   ```bash
+   git clone https://github.com/ajju-raj/File-Encryption-Tool.git
+   cd file-encryption-tool
+   ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+2. **Install backend dependencies:**
 
-### `npm run eject`
+   Navigate to the `backend/` directory and run:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+   ```bash
+   cd backend
+   npm install
+   ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+3. **Install frontend dependencies:**
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+   Navigate to the `frontend/` directory and run:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+   ```bash
+   cd frontend
+   npm install
+   ```
 
-## Learn More
+4. **Run the backend server:**
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+   In the `backend/` directory, run the following command to start the Express server:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+   ```bash
+   npm start
+   ```
 
-### Code Splitting
+   The backend server will be running on `http://localhost:5000`.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+5. **Run the React frontend:**
 
-### Analyzing the Bundle Size
+   In the `frontend/` directory, run the following command to start the React development server:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+   ```bash
+   npm start
+   ```
 
-### Making a Progressive Web App
+   The frontend app will be running on `http://localhost:3000`.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## Project Structure
 
-### Advanced Configuration
+The project is divided into two parts: frontend and backend.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+- **Backend (`backend/` directory)**:
+  - `server.js`: The main Express server where file uploads, encryption, and decryption happen.
+  - `uploads/`: Folder where encrypted and decrypted files are stored.
+  - **Dependencies**:
+    - `crypto`: For AES encryption and decryption.
+    - `multer`: For handling file uploads.
+    - `fs`: File system module for reading and writing files.
+  
+- **Frontend (`frontend/` directory)**:
+  - `src/App.js`: The main React component where file upload, encryption, and decryption happen.
+  - `public/`: Contains static assets (if any).
+  - **Dependencies**:
+    - `axios`: For making HTTP requests to the backend.
 
-### Deployment
+## How It Works
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+1. **Encrypting a File**:
+   - The user uploads a file via the React frontend.
+   - The file is sent to the backend, where it is encrypted using AES-256-CTR with a random initialization vector (IV) and a pre-generated secret key.
+   - The encrypted file is stored in the `uploads/` directory, and the download link along with the IV is provided to the user.
 
-### `npm run build` fails to minify
+2. **Decrypting a File**:
+   - The user can input the encrypted file path and the IV (from the encryption step) to decrypt the file.
+   - The backend decrypts the file and stores the decrypted file in the `uploads/` directory, providing a download link for the user.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## API Endpoints
+
+- **POST** `/upload`
+  - Uploads a file and returns the encrypted file path and IV.
+
+- **POST** `/decrypt`
+  - Takes the file path and IV, decrypts the file, and returns the decrypted file path.
+
+## Example Usage
+
+1. **Encrypt a file**:
+   - Select a file from your computer and upload it.
+   - The file will be encrypted, and you will be provided with a link to download the encrypted file, as well as the IV.
+
+2. **Decrypt a file**:
+   - Provide the encrypted file's path and the IV.
+   - Click the decrypt button, and the file will be decrypted and available for download.
+
+## Screenshots
+
+### Frontend UI
+
+![Basic Frontend](image.png)
+
+### Backend Server
+
+![Backend Server](image-1.png)
+
+## Security Considerations
+
+- **Symmetric Key Storage**: In this project, the symmetric key is generated on the fly and used for encryption and decryption during a single session. For production use, key management strategies like storing keys securely (e.g., in a secure vault) should be considered.
+- **Initialization Vector (IV)**: A unique IV is used for each encryption to enhance security.
+- **Encryption Algorithm**: AES-256-CTR is used for secure encryption.
+
+## Future Improvements
+
+- Add user authentication and permissions for uploading/downloading files.
+- Implement secure storage of encryption keys.
+- Use a database to keep track of uploaded and encrypted files.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+
+### Contributing
+
+Feel free to submit issues or pull requests if you have suggestions for improvement. Contributions are welcome!
