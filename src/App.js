@@ -3,20 +3,20 @@ import axios from 'axios';
 
 const FileEncryptionApp = () => {
   const [file, setFile] = useState(null);
-  const [uploadMessage, setUploadMessage] = useState('');
-  const [encryptedDownloadUrl, setEncryptedDownloadUrl] = useState('');
+  const [message, setMessage] = useState('');
+  const [downloadUrl, setDownloadUrl] = useState('');
+  const [key, setKey] = useState('');
   const [iv, setIv] = useState('');
-  const [decryptionMessage, setDecryptionMessage] = useState('');
-  const [decryptedDownloadUrl, setDecryptedDownloadUrl] = useState('');
+  const [mode, setMode] = useState('encrypt'); // 'encrypt' or 'decrypt'
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
 
-  const handleUpload = async (e) => {
+  const handleEncrypt = async (e) => {
     e.preventDefault();
     if (!file) {
-      setUploadMessage('Please select a file.');
+      setMessage('Please select a file.');
       return;
     }
 
@@ -24,66 +24,89 @@ const FileEncryptionApp = () => {
     formData.append('file', file);
 
     try {
-      const response = await axios.post('http://localhost:5000/upload', formData, {
+      const response = await axios.post('http://localhost:5000/encrypt', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-
-      setUploadMessage('File encrypted successfully!');
-      setEncryptedDownloadUrl(`http://localhost:5000${response.data.downloadUrl}`);
+      setMessage('File encrypted successfully!');
+      setDownloadUrl(`http://localhost:5000${response.data.downloadUrl}`);
+      setKey(response.data.key);
       setIv(response.data.iv);
     } catch (error) {
-      setUploadMessage('Error encrypting file.');
-    }
-  };
-
-  const handleDownloadEncryptedFile = () => {
-    if (encryptedDownloadUrl) {
-      window.location.href = encryptedDownloadUrl;
+      setMessage('Error encrypting file.');
     }
   };
 
   const handleDecrypt = async (e) => {
     e.preventDefault();
+    if (!file || !key || !iv) {
+      setMessage('Please provide a file, key, and IV.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('key', key);
+    formData.append('iv', iv);
 
     try {
-      const response = await axios.post('http://localhost:5000/decrypt', {
-        filePath: encryptedDownloadUrl.replace('http://localhost:5000', ''),
-        iv: iv,
+      const response = await axios.post('http://localhost:5000/decrypt', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-
-      setDecryptionMessage('File decrypted successfully!');
-      setDecryptedDownloadUrl(`http://localhost:5000${response.data.downloadUrl}`);
+      setMessage('File decrypted successfully!');
+      setDownloadUrl(`http://localhost:5000${response.data.downloadUrl}`);
     } catch (error) {
-      setDecryptionMessage('Error decrypting file.');
+      setMessage('Error decrypting file.');
     }
   };
 
-  const handleDownloadDecryptedFile = () => {
-    if (decryptedDownloadUrl) {
-      window.location.href = decryptedDownloadUrl;
+  const handleDownload = () => {
+    if (downloadUrl) {
+      window.location.href = downloadUrl;
     }
   };
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>File Encryption Tool</h1>
-      <form onSubmit={handleUpload} style={styles.form}>
-        <label style={styles.label}>Select a file to encrypt:</label>
+      <h1 style={styles.title}>File Encryption/Decryption Tool</h1>
+      <div style={styles.modeSelector}>
+        <button 
+          style={mode === 'encrypt' ? styles.activeMode : styles.inactiveMode} 
+          onClick={() => setMode('encrypt')}
+        >
+          Encrypt
+        </button>
+        <button 
+          style={mode === 'decrypt' ? styles.activeMode : styles.inactiveMode} 
+          onClick={() => setMode('decrypt')}
+        >
+          Decrypt
+        </button>
+      </div>
+      <form onSubmit={mode === 'encrypt' ? handleEncrypt : handleDecrypt} style={styles.form}>
+        <label style={styles.label}>Select a file:</label>
         <input type="file" onChange={handleFileChange} style={styles.input} />
-        <button type="submit" style={styles.button}>Encrypt & Upload</button>
+        {mode === 'decrypt' && (
+          <>
+            <label style={styles.label}>Key:</label>
+            <input type="text" value={key} onChange={(e) => setKey(e.target.value)} style={styles.input} />
+            <label style={styles.label}>IV:</label>
+            <input type="text" value={iv} onChange={(e) => setIv(e.target.value)} style={styles.input} />
+          </>
+        )}
+        <button type="submit" style={styles.button}>
+          {mode === 'encrypt' ? 'Encrypt & Upload' : 'Decrypt & Download'}
+        </button>
       </form>
-      {uploadMessage && <p style={styles.message}>{uploadMessage}</p>}
-      {encryptedDownloadUrl && (
-        <button onClick={handleDownloadEncryptedFile} style={styles.downloadBtn}>Download Encrypted File</button>
+      {message && <p style={styles.message}>{message}</p>}
+      {downloadUrl && (
+        <button onClick={handleDownload} style={styles.downloadBtn}>Download File</button>
       )}
-      {encryptedDownloadUrl && (
-        <form onSubmit={handleDecrypt} style={styles.form}>
-          <button type="submit" style={styles.button}>Decrypt File</button>
-        </form>
-      )}
-      {decryptionMessage && <p style={styles.message}>{decryptionMessage}</p>}
-      {decryptedDownloadUrl && (
-        <button onClick={handleDownloadDecryptedFile} style={styles.downloadBtn}>Download Decrypted File</button>
+      {mode === 'encrypt' && key && (
+        <div style={styles.keyInfo}>
+          <p>Key: {key}</p>
+          <p>IV: {iv}</p>
+          <p style={styles.warning}>Save these for decryption!</p>
+        </div>
       )}
     </div>
   );
@@ -105,16 +128,40 @@ const styles = {
     fontSize: '24px',
     marginBottom: '20px',
   },
+  modeSelector: {
+    display: 'flex',
+    marginBottom: '20px',
+  },
+  activeMode: {
+    padding: '10px 20px',
+    backgroundColor: '#4CAF50',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    marginRight: '10px',
+  },
+  inactiveMode: {
+    padding: '10px 20px',
+    backgroundColor: '#ddd',
+    color: '#333',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    marginRight: '10px',
+  },
   form: {
     display: 'flex',
     flexDirection: 'column',
     marginBottom: '20px',
+    width: '100%',
   },
   label: {
-    marginBottom: '10px',
+    marginBottom: '5px',
   },
   input: {
-    marginBottom: '20px',
+    marginBottom: '15px',
+    padding: '5px',
   },
   button: {
     padding: '10px 20px',
@@ -134,6 +181,15 @@ const styles = {
   },
   message: {
     color: 'green',
+    marginBottom: '10px',
+  },
+  keyInfo: {
+    marginTop: '20px',
+    textAlign: 'center',
+  },
+  warning: {
+    color: 'red',
+    fontWeight: 'bold',
   },
 };
 
