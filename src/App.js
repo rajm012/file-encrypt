@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-function App() {
+const FileEncryptionApp = () => {
   const [file, setFile] = useState(null);
-  const [message, setMessage] = useState('');
-  const [downloadUrl, setDownloadUrl] = useState('');
+  const [uploadMessage, setUploadMessage] = useState('');
+  const [encryptedDownloadUrl, setEncryptedDownloadUrl] = useState('');
   const [iv, setIv] = useState('');
   const [decryptionMessage, setDecryptionMessage] = useState('');
   const [decryptedDownloadUrl, setDecryptedDownloadUrl] = useState('');
@@ -15,27 +15,31 @@ function App() {
 
   const handleUpload = async (e) => {
     e.preventDefault();
+    if (!file) {
+      setUploadMessage('Please select a file.');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('file', file);
 
     try {
       const response = await axios.post('http://localhost:5000/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-      console.log('Upload response:', response.data);
-      setMessage('File encrypted and uploaded successfully');
-      setDownloadUrl(`http://localhost:5000${response.data.downloadUrl}`);
+
+      setUploadMessage('File encrypted successfully!');
+      setEncryptedDownloadUrl(`http://localhost:5000${response.data.downloadUrl}`);
       setIv(response.data.iv);
     } catch (error) {
-      console.error('Error uploading file:', error.response ? error.response.data : error.message);
-      setMessage(`Error uploading file: ${error.response ? error.response.data : error.message}`);
+      setUploadMessage('Error encrypting file.');
     }
   };
 
-  const handleDownload = () => {
-    window.location.href = downloadUrl;
+  const handleDownloadEncryptedFile = () => {
+    if (encryptedDownloadUrl) {
+      window.location.href = encryptedDownloadUrl;
+    }
   };
 
   const handleDecrypt = async (e) => {
@@ -43,50 +47,94 @@ function App() {
 
     try {
       const response = await axios.post('http://localhost:5000/decrypt', {
-        filePath: downloadUrl.replace('http://localhost:5000', ''),
+        filePath: encryptedDownloadUrl.replace('http://localhost:5000', ''),
         iv: iv,
       });
-      console.log('Decryption response:', response.data);
-      setDecryptionMessage('File decrypted successfully');
+
+      setDecryptionMessage('File decrypted successfully!');
       setDecryptedDownloadUrl(`http://localhost:5000${response.data.downloadUrl}`);
     } catch (error) {
-      console.error('Error decrypting file:', error.response ? error.response.data : error.message);
-      setDecryptionMessage(`Error decrypting file: ${error.response ? error.response.data : error.message}`);
+      setDecryptionMessage('Error decrypting file.');
     }
   };
 
-  const handleDecryptedDownload = () => {
-    window.location.href = decryptedDownloadUrl;
+  const handleDownloadDecryptedFile = () => {
+    if (decryptedDownloadUrl) {
+      window.location.href = decryptedDownloadUrl;
+    }
   };
 
   return (
-    <div className="App">
-      <h1>File Encryption Tool</h1>
-
-      <form onSubmit={handleUpload}>
-        <input type="file" onChange={handleFileChange} />
-        <button type="submit">Upload and Encrypt</button>
+    <div style={styles.container}>
+      <h1 style={styles.title}>File Encryption Tool</h1>
+      <form onSubmit={handleUpload} style={styles.form}>
+        <label style={styles.label}>Select a file to encrypt:</label>
+        <input type="file" onChange={handleFileChange} style={styles.input} />
+        <button type="submit" style={styles.button}>Encrypt & Upload</button>
       </form>
-      {message && <p>{message}</p>}
-      
-      {downloadUrl && (
-        <div>
-          <button onClick={handleDownload}>Download Encrypted File</button>
-          <p><strong>IV:</strong> {iv}</p>
-        </div>
+      {uploadMessage && <p style={styles.message}>{uploadMessage}</p>}
+      {encryptedDownloadUrl && (
+        <button onClick={handleDownloadEncryptedFile} style={styles.downloadBtn}>Download Encrypted File</button>
       )}
-
-      {downloadUrl && (
-        <form onSubmit={handleDecrypt}>
-          <button type="submit">Decrypt File</button>
+      {encryptedDownloadUrl && (
+        <form onSubmit={handleDecrypt} style={styles.form}>
+          <button type="submit" style={styles.button}>Decrypt File</button>
         </form>
       )}
-      {decryptionMessage && <p>{decryptionMessage}</p>}
+      {decryptionMessage && <p style={styles.message}>{decryptionMessage}</p>}
       {decryptedDownloadUrl && (
-        <button onClick={handleDecryptedDownload}>Download Decrypted File</button>
+        <button onClick={handleDownloadDecryptedFile} style={styles.downloadBtn}>Download Decrypted File</button>
       )}
     </div>
   );
-}
+};
 
-export default App;
+const styles = {
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    backgroundColor: '#f4f4f9',
+    padding: '20px',
+    borderRadius: '10px',
+    width: '500px',
+    margin: 'auto',
+    boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
+  },
+  title: {
+    fontSize: '24px',
+    marginBottom: '20px',
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    marginBottom: '20px',
+  },
+  label: {
+    marginBottom: '10px',
+  },
+  input: {
+    marginBottom: '20px',
+  },
+  button: {
+    padding: '10px 20px',
+    backgroundColor: '#4CAF50',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    marginBottom: '10px',
+  },
+  downloadBtn: {
+    backgroundColor: '#007bff',
+    color: '#fff',
+    padding: '10px 20px',
+    borderRadius: '5px',
+    cursor: 'pointer',
+  },
+  message: {
+    color: 'green',
+  },
+};
+
+export default FileEncryptionApp;
