@@ -67,47 +67,50 @@ const FileEncryptionApp = () => {
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>File Encryption/Decryption Tool</h1>
-      <div style={styles.modeSelector}>
-        <button 
-          style={mode === 'encrypt' ? styles.activeMode : styles.inactiveMode} 
-          onClick={() => setMode('encrypt')}
-        >
-          Encrypt
-        </button>
-        <button 
-          style={mode === 'decrypt' ? styles.activeMode : styles.inactiveMode} 
-          onClick={() => setMode('decrypt')}
-        >
-          Decrypt
-        </button>
-      </div>
-      <form onSubmit={mode === 'encrypt' ? handleEncrypt : handleDecrypt} style={styles.form}>
-        <label style={styles.label}>Select a file:</label>
-        <input type="file" onChange={handleFileChange} style={styles.input} />
-        {mode === 'decrypt' && (
-          <>
-            <label style={styles.label}>Key:</label>
-            <input type="text" value={key} onChange={(e) => setKey(e.target.value)} style={styles.input} />
-            <label style={styles.label}>IV:</label>
-            <input type="text" value={iv} onChange={(e) => setIv(e.target.value)} style={styles.input} />
-          </>
-        )}
-        <button type="submit" style={styles.button}>
-          {mode === 'encrypt' ? 'Encrypt & Upload' : 'Decrypt & Download'}
-        </button>
-      </form>
-      {message && <p style={styles.message}>{message}</p>}
-      {downloadUrl && (
-        <button onClick={handleDownload} style={styles.downloadBtn}>Download File</button>
-      )}
-      {mode === 'encrypt' && key && (
-        <div style={styles.keyInfo}>
-          <p>Key: {key}</p>
-          <p>IV: {iv}</p>
-          <p style={styles.warning}>Save these for decryption!</p>
+      <div style={styles.card}>
+        <h1 style={styles.title}>File Encryption/Decryption Tool</h1>
+        <div style={styles.modeSelector}>
+          <button 
+            style={mode === 'encrypt' ? styles.activeMode : styles.inactiveMode} 
+            onClick={() => setMode('encrypt')}
+          >
+            Encrypt
+          </button>
+          <button 
+            style={mode === 'decrypt' ? styles.activeMode : styles.inactiveMode} 
+            onClick={() => setMode('decrypt')}
+          >
+            Decrypt
+          </button>
         </div>
-      )}
+        <form onSubmit={mode === 'encrypt' ? handleEncrypt : handleDecrypt} style={styles.form}>
+          <label style={styles.label}>Select a file:</label>
+          <input type="file" onChange={handleFileChange} style={styles.fileInput} />
+          {mode === 'decrypt' && (
+            <>
+              <label style={styles.label}>Key:</label>
+              <input type="text" value={key} onChange={(e) => setKey(e.target.value)} style={styles.textInput} />
+              <label style={styles.label}>IV:</label>
+              <input type="text" value={iv} onChange={(e) => setIv(e.target.value)} style={styles.textInput} />
+            </>
+          )}
+          <button type="submit" style={styles.button}>
+            {mode === 'encrypt' ? 'Encrypt & Upload' : 'Decrypt & Download'}
+          </button>
+        </form>
+        {message && <p style={styles.message}>{message}</p>}
+        {downloadUrl && (
+          <button onClick={handleDownload} style={styles.downloadBtn}>Download File</button>
+        )}
+        {mode === 'encrypt' && key && (
+          <div style={styles.keyInfo}>
+            <h3 style={styles.keyInfoTitle}>Encryption Details</h3>
+            <p style={styles.keyInfoText}><strong>Key:</strong> {key}</p>
+            <p style={styles.keyInfoText}><strong>IV:</strong> {iv}</p>
+            <p style={styles.warning}>Save these for decryption!</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -115,22 +118,29 @@ const FileEncryptionApp = () => {
 const styles = {
   container: {
     display: 'flex',
-    flexDirection: 'column',
+    justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f4f4f9',
-    padding: '20px',
-    borderRadius: '10px',
-    width: '500px',
-    margin: 'auto',
-    boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
+    minHeight: '100vh',
+    backgroundColor: '#f0f2f5',
+    fontFamily: 'Arial, sans-serif',
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: '12px',
+    padding: '40px',
+    width: '480px',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
   },
   title: {
-    fontSize: '24px',
-    marginBottom: '20px',
+    fontSize: '28px',
+    color: '#333',
+    marginBottom: '24px',
+    textAlign: 'center',
   },
   modeSelector: {
     display: 'flex',
-    marginBottom: '20px',
+    justifyContent: 'center',
+    marginBottom: '24px',
   },
   activeMode: {
     padding: '10px 20px',
@@ -140,56 +150,90 @@ const styles = {
     borderRadius: '5px',
     cursor: 'pointer',
     marginRight: '10px',
+    transition: 'background-color 0.3s',
   },
   inactiveMode: {
     padding: '10px 20px',
-    backgroundColor: '#ddd',
+    backgroundColor: '#f0f0f0',
     color: '#333',
     border: 'none',
     borderRadius: '5px',
     cursor: 'pointer',
     marginRight: '10px',
+    transition: 'background-color 0.3s',
   },
   form: {
     display: 'flex',
     flexDirection: 'column',
-    marginBottom: '20px',
-    width: '100%',
+    marginBottom: '24px',
   },
   label: {
-    marginBottom: '5px',
+    marginBottom: '8px',
+    color: '#555',
+    fontSize: '14px',
   },
-  input: {
-    marginBottom: '15px',
-    padding: '5px',
+  fileInput: {
+    marginBottom: '16px',
+    padding: '8px',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+  },
+  textInput: {
+    marginBottom: '16px',
+    padding: '10px',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    fontSize: '14px',
   },
   button: {
-    padding: '10px 20px',
+    padding: '12px 20px',
     backgroundColor: '#4CAF50',
     color: '#fff',
     border: 'none',
     borderRadius: '5px',
     cursor: 'pointer',
-    marginBottom: '10px',
+    fontSize: '16px',
+    transition: 'background-color 0.3s',
   },
   downloadBtn: {
     backgroundColor: '#007bff',
     color: '#fff',
-    padding: '10px 20px',
+    padding: '12px 20px',
     borderRadius: '5px',
     cursor: 'pointer',
+    border: 'none',
+    fontSize: '16px',
+    transition: 'background-color 0.3s',
   },
   message: {
-    color: 'green',
-    marginBottom: '10px',
+    color: '#4CAF50',
+    marginBottom: '16px',
+    textAlign: 'center',
+    fontSize: '14px',
   },
   keyInfo: {
-    marginTop: '20px',
-    textAlign: 'center',
+    marginTop: '24px',
+    backgroundColor: '#f9f9f9',
+    padding: '16px',
+    borderRadius: '8px',
+    border: '1px solid #ddd',
+  },
+  keyInfoTitle: {
+    fontSize: '18px',
+    color: '#333',
+    marginBottom: '12px',
+  },
+  keyInfoText: {
+    fontSize: '14px',
+    color: '#555',
+    marginBottom: '8px',
+    wordBreak: 'break-all',
   },
   warning: {
-    color: 'red',
+    color: '#d32f2f',
     fontWeight: 'bold',
+    marginTop: '12px',
+    fontSize: '14px',
   },
 };
 
